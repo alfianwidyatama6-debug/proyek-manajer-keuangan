@@ -1,0 +1,292 @@
+/* Variabel Warna untuk Desain yang Mudah Disesuaikan */
+:root {
+    --bg-color: #f4f7f6;
+    --card-color: #ffffff;
+    --text-color: #333;
+    --primary-color: #3498db;
+    --income-color: #2ecc71;
+    --expense-color: #e74c3c;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Reset Dasar */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Lato', sans-serif;
+    
+    /* === PERUBAHAN BATIK DIMULAI DI SINI === */
+    background-image: url('WhatsApp Image 2025-11-16 at 19.01.09.jpeg'); /* Memuat file WhatsApp Image 2025-11-16 at 19.01.09.jpeg */
+    background-repeat: repeat; /* Mengulang gambar pola */
+    background-color: var(--bg-color); /* Warna cadangan jika gambar gagal dimuat */
+    /* === PERUBAHAN BATIK SELESAI === */
+
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* Kontainer Aplikasi Utama */
+.app-container {
+    width: 100%;
+    max-width: 800px;
+    
+    /* === PERUBAHAN TRANSPARANSI DIMULAI DI SINI === */
+    /* Membuat kartu sedikit tembus pandang agar batik terlihat */
+    background-color: rgba(255, 255, 255, 0.95); /* 95% putih */
+    /* === PERUBAHAN TRANSPARANSI SELESAI === */
+
+    border-radius: 15px;
+    box-shadow: 0 10px 30px var(--shadow-color);
+    overflow: hidden;
+}
+
+/* Header */
+header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 30px;
+    text-align: center;
+}
+
+header h1 {
+    margin: 0;
+    font-weight: 700;
+}
+
+/* Konten Utama */
+main {
+    padding: 30px;
+}
+
+/* Ringkasan Keuangan (Grid) */
+.summary-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.summary-card {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    border: 1px solid #eee;
+}
+
+.summary-card h3 {
+    font-size: 16px;
+    font-weight: 400;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.summary-card .amount {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+#balance {
+    color: var(--primary-color);
+}
+
+#total-income {
+    color: var(--income-color);
+}
+
+#total-expense {
+    color: var(--expense-color);
+}
+
+/* Fitur Unik: Saran Budget Harian */
+.unique-feature {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.unique-feature h3 {
+    margin-bottom: 10px;
+    font-weight: 400;
+}
+
+.unique-feature #daily-budget {
+    font-size: 28px;
+    font-weight: 700;
+}
+
+/* Form dan Riwayat (Layout Flex) */
+.content-layout {
+    display: flex;
+    gap: 30px;
+}
+
+.form-section, .history-section {
+    flex: 1;
+}
+
+h2 {
+    font-weight: 700;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 5px;
+    display: inline-block;
+}
+
+/* Styling Form */
+.form-control {
+    margin-bottom: 15px;
+}
+
+.form-control label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 700;
+}
+
+.form-control input[type="text"],
+.form-control input[type="number"],
+.form-control select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-family: 'Lato', sans-serif;
+    font-size: 14px;
+}
+
+.radio-group {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 400;
+}
+
+.btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 12px;
+    width: 100%;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    background-color: #2980b9;
+}
+
+/* Riwayat Transaksi */
+.history-section {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 10px; /* Ruang untuk scrollbar */
+}
+
+#transaction-list {
+    list-style-type: none;
+}
+
+#transaction-list li {
+    background-color: var(--card-color);
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px var(--shadow-color);
+    position: relative;
+}
+
+#transaction-list li.income {
+    border-left: 5px solid var(--income-color);
+}
+
+#transaction-list li.expense {
+    border-left: 5px solid var(--expense-color);
+}
+
+.transaction-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.transaction-text {
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.transaction-category {
+    font-size: 12px;
+    color: #777;
+    font-style: italic;
+}
+
+.transaction-amount {
+    font-weight: 700;
+}
+
+.delete-btn {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 5px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 5px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+#transaction-list li:hover .delete-btn {
+    opacity: 1;
+}
+
+#transaction-list li:hover .transaction-amount {
+    display: none; /* Sembunyikan jumlah saat hover untuk menunjukkan tombol hapus */
+}
+
+/* Desain Responsif */
+@media (max-width: 768px) {
+    .content-layout {
+        flex-direction: column;
+    }
+
+    .summary-container {
+        grid-template-columns: 1fr;
+    }
+
+    main {
+        padding: 20px;
+    }
+
+    header {
+        padding: 20px;
+    }
+}
