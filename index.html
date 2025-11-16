@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajer Keuangan Pribadi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <h1>Manajer Keuangan Pribadi</h1>
+        </header>
+
+        <main>
+            <section class="summary-container">
+                <div class="summary-card">
+                    <h3>Total Pemasukan</h3>
+                    <div class="amount" id="total-income">Rp 0</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Total Pengeluaran</h3>
+                    <div class="amount" id="total-expense">Rp 0</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Sisa Saldo</h3>
+                    <div class="amount" id="balance">Rp 0</div>
+                </div>
+            </section>
+
+            <section class="unique-feature">
+                <h3>Saran Budget Harian Anda (Bulan Ini)</h3>
+                <div id="daily-budget">Rp 0</div>
+            </section>
+
+            <div class="content-layout">
+                <section class="form-section">
+                    <h2>Tambah Transaksi</h2>
+                    <form id="transaction-form">
+                        <div class="form-control">
+                            <label for="text">Deskripsi</label>
+                            <input type="text" id="text" placeholder="Contoh: Gaji bulanan..." required>
+                        </div>
+                        
+                        <div class="form-control">
+                            <label for="amount">Jumlah (Rp)</label>
+                            <input type="number" id="amount" placeholder="Contoh: 50000" required>
+                        </div>
+
+                        <div class="form-control">
+                            <label>Tipe Transaksi</label>
+                            <div class="radio-group">
+                                <label for="type-income">
+                                    <input type="radio" id="type-income" name="type" value="income" checked>
+                                    Pemasukan
+                                </label>
+                                <label for="type-expense">
+                                    <input type="radio" id="type-expense" name="type" value="expense">
+                                    Pengeluaran
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-control">
+                            <label for="category">Kategori</label>
+                            <select id="category">
+                                <option value="gaji">Gaji</option>
+                                <option value="makanan">Makanan</option>
+                                <option value="transportasi">Transportasi</option>
+                                <option value="tagihan">Tagihan</option>
+                                <option value="hiburan">Hiburan</option>
+                                <option value="lainnya">Lainnya</option>
+                            </select>
+                        </div>
+                        
+                        <button class="btn">Tambah Transaksi</button>
+                    </form>
+                </section>
+
+                <section class="history-section">
+                    <h2>Riwayat Transaksi</h2>
+                    <ul id="transaction-list">
+                        </ul>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
