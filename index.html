@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajer Keuangan Pribadi</title>
+    <title>Manajer Keuangan Pribadi + Laporan</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="app-container">
         <header>
-            <h1>Manajer Keuangan Pribadi</h1>
+            <h1>Manajer Keuangan </h1>
         </header>
 
         <main>
@@ -32,7 +31,7 @@
             </section>
 
             <section class="unique-feature">
-                <h3>Saran Budget Harian Anda (Bulan Ini)</h3>
+                <h3>Saran Budget Harian (Sisa Bulan Ini)</h3>
                 <div id="daily-budget">Rp 0</div>
             </section>
 
@@ -42,7 +41,7 @@
                     <form id="transaction-form">
                         <div class="form-control">
                             <label for="text">Deskripsi</label>
-                            <input type="text" id="text" placeholder="Contoh: Gaji bulanan..." required>
+                            <input type="text" id="text" placeholder="Contoh: Gaji, Nasi Goreng..." required>
                         </div>
                         
                         <div class="form-control">
@@ -72,6 +71,7 @@
                                 <option value="transportasi">Transportasi</option>
                                 <option value="tagihan">Tagihan</option>
                                 <option value="hiburan">Hiburan</option>
+                                <option value="belanja">Belanja</option>
                                 <option value="lainnya">Lainnya</option>
                             </select>
                         </div>
@@ -86,6 +86,27 @@
                         </ul>
                 </section>
             </div>
+
+            <section class="report-section">
+                <h2>Laporan Analisis</h2>
+                
+                <div class="report-container">
+                    <div class="persona-card">
+                        <div class="persona-icon" id="persona-icon">🤔</div>
+                        <h3>Status Keuangan</h3>
+                        <h4 id="persona-title">Belum Ada Data</h4>
+                        <p id="persona-desc">Tambahkan transaksi untuk melihat kepribadianmu.</p>
+                    </div>
+
+                    <div class="category-stats">
+                        <h3>Top Pengeluaran</h3>
+                        <div id="category-list">
+                            <p style="text-align:center; color:#999; margin-top:20px;">Belum ada pengeluaran.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
         </main>
     </div>
 
