@@ -1,15 +1,14 @@
-/* Variabel Warna untuk Desain yang Mudah Disesuaikan */
+/* --- 1. VARIABEL & RESET --- */
 :root {
-    --bg-color: #f4f7f6;
-    --card-color: #ffffff;
+    --bg-color: #f4f7f6; /* Fallback color */
+    --card-color: rgba(255, 255, 255, 0.95); /* Sedikit transparan agar menyatu dgn background */
     --text-color: #333;
     --primary-color: #3498db;
     --income-color: #2ecc71;
     --expense-color: #e74c3c;
-    --shadow-color: rgba(0, 0, 0, 0.1);
+    --shadow-color: rgba(0, 0, 0, 0.2);
 }
 
-/* Reset Dasar */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -19,54 +18,49 @@
 body {
     font-family: 'Lato', sans-serif;
     
-    /* === PERUBAHAN BATIK DIMULAI DI SINI === */
-    background-image: url('WhatsApp Image 2025-11-16 at 19.01.09.jpeg'); /* Memuat file WhatsApp Image 2025-11-16 at 19.01.09.jpeg */
-    background-repeat: repeat; /* Mengulang gambar pola */
-    background-color: var(--bg-color); /* Warna cadangan jika gambar gagal dimuat */
-    /* === PERUBAHAN BATIK SELESAI === */
-
+    /* PENGATURAN BACKGROUND GAMBAR */
+    /* Pastikan nama file gambar sama persis (termasuk spasi dan huruf besar/kecil) */
+    background: url('WhatsApp Image 2025-11-16 at 19.01.09.jpeg') no-repeat center center fixed;
+    background-size: cover; /* Memastikan gambar memenuhi layar */
+    
     color: var(--text-color);
     display: flex;
     justify-content: center;
-    align-items: flex-start;
+    align-items: flex-start; /* Agar konten mulai dari atas, bukan tengah vertikal */
     min-height: 100vh;
     padding: 20px;
 }
 
-/* Kontainer Aplikasi Utama */
+/* --- 2. KONTAINER UTAMA APLIKASI --- */
 .app-container {
     width: 100%;
     max-width: 800px;
-    
-    /* === PERUBAHAN TRANSPARANSI DIMULAI DI SINI === */
-    /* Membuat kartu sedikit tembus pandang agar batik terlihat */
-    background-color: rgba(255, 255, 255, 0.95); /* 95% putih */
-    /* === PERUBAHAN TRANSPARANSI SELESAI === */
-
+    background-color: var(--card-color);
     border-radius: 15px;
-    box-shadow: 0 10px 30px var(--shadow-color);
+    box-shadow: 0 15px 40px var(--shadow-color); /* Shadow lebih tebal agar kontras dgn foto */
     overflow: hidden;
+    margin-bottom: 50px;
+    backdrop-filter: blur(5px); /* Efek blur di belakang kartu (opsional, support browser modern) */
 }
 
-/* Header */
 header {
     background-color: var(--primary-color);
     color: white;
-    padding: 30px;
+    padding: 25px;
     text-align: center;
 }
 
 header h1 {
     margin: 0;
     font-weight: 700;
+    font-size: 24px;
 }
 
-/* Konten Utama */
 main {
     padding: 30px;
 }
 
-/* Ringkasan Keuangan (Grid) */
+/* --- 3. RINGKASAN KEUANGAN (KARTU ATAS) --- */
 .summary-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -83,30 +77,22 @@ main {
 }
 
 .summary-card h3 {
-    font-size: 16px;
-    font-weight: 400;
+    font-size: 14px;
     color: #555;
     margin-bottom: 10px;
+    font-weight: 400;
 }
 
 .summary-card .amount {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 700;
 }
 
-#balance {
-    color: var(--primary-color);
-}
+#balance { color: var(--primary-color); }
+#total-income { color: var(--income-color); }
+#total-expense { color: var(--expense-color); }
 
-#total-income {
-    color: var(--income-color);
-}
-
-#total-expense {
-    color: var(--expense-color);
-}
-
-/* Fitur Unik: Saran Budget Harian */
+/* --- 4. FITUR UNIK: DAILY BUDGET --- */
 .unique-feature {
     background: linear-gradient(135deg, #3498db, #2980b9);
     color: white;
@@ -114,11 +100,13 @@ main {
     border-radius: 10px;
     text-align: center;
     margin-bottom: 30px;
+    box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
 }
 
 .unique-feature h3 {
-    margin-bottom: 10px;
+    margin-bottom: 5px;
     font-weight: 400;
+    font-size: 14px;
 }
 
 .unique-feature #daily-budget {
@@ -126,10 +114,11 @@ main {
     font-weight: 700;
 }
 
-/* Form dan Riwayat (Layout Flex) */
+/* --- 5. LAYOUT UTAMA (FORM & RIWAYAT) --- */
 .content-layout {
     display: flex;
     gap: 30px;
+    margin-bottom: 40px;
 }
 
 .form-section, .history-section {
@@ -137,6 +126,7 @@ main {
 }
 
 h2 {
+    font-size: 18px;
     font-weight: 700;
     margin-bottom: 20px;
     border-bottom: 2px solid var(--primary-color);
@@ -144,40 +134,29 @@ h2 {
     display: inline-block;
 }
 
-/* Styling Form */
-.form-control {
-    margin-bottom: 15px;
-}
+/* --- 6. STYLING FORM INPUT --- */
+.form-control { margin-bottom: 15px; }
 
 .form-control label {
     display: block;
     margin-bottom: 5px;
     font-weight: 700;
+    font-size: 14px;
 }
 
 .form-control input[type="text"],
 .form-control input[type="number"],
 .form-control select {
     width: 100%;
-    padding: 12px;
+    padding: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
-    font-family: 'times-new-roman', sans-serif;
+    font-family: 'times new roman', sans-serif;
     font-size: 14px;
 }
 
-.radio-group {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 15px;
-}
-
-.radio-group label {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-weight: 400;
-}
+.radio-group { display: flex; gap: 15px; }
+.radio-group label { display: flex; align-items: center; gap: 5px; font-size: 14px; cursor: pointer; }
 
 .btn {
     background-color: var(--primary-color);
@@ -186,107 +165,165 @@ h2 {
     padding: 12px;
     width: 100%;
     border-radius: 5px;
-    font-size: 16px;
     font-weight: 700;
+    font-size: 16px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    margin-top: 10px;
 }
 
-.btn:hover {
-    background-color: #2980b9;
-}
+.btn:hover { background-color: #2980b9; }
 
-/* Riwayat Transaksi */
+/* --- 7. RIWAYAT TRANSAKSI (LIST) --- */
 .history-section {
-    max-height: 400px;
+    max-height: 450px;
     overflow-y: auto;
-    padding-right: 10px; /* Ruang untuk scrollbar */
+    padding-right: 5px; /* Ruang scrollbar */
 }
 
-#transaction-list {
-    list-style-type: none;
-}
+#transaction-list { list-style-type: none; }
 
 #transaction-list li {
-    background-color: var(--card-color);
+    background-color: #fff;
     border: 1px solid #eee;
     border-radius: 8px;
-    padding: 15px;
+    padding: 10px 15px;
     margin-bottom: 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 5px var(--shadow-color);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     position: relative;
 }
 
-#transaction-list li.income {
-    border-left: 5px solid var(--income-color);
-}
+#transaction-list li.income { border-left: 5px solid var(--income-color); }
+#transaction-list li.expense { border-left: 5px solid var(--expense-color); }
 
-#transaction-list li.expense {
-    border-left: 5px solid var(--expense-color);
-}
+.transaction-details { display: flex; flex-direction: column; }
+.transaction-text { font-weight: 700; font-size: 15px; }
+.transaction-category { font-size: 12px; color: #777; font-style: italic; }
+.transaction-amount { font-weight: 700; font-size: 15px; }
 
-.transaction-details {
-    display: flex;
-    flex-direction: column;
-}
-
-.transaction-text {
-    font-weight: 700;
-    font-size: 16px;
-}
-
-.transaction-category {
-    font-size: 12px;
-    color: #777;
-    font-style: italic;
-}
-
-.transaction-amount {
-    font-weight: 700;
-}
-
+/* Tombol Hapus (Muncul saat hover) */
 .delete-btn {
     background-color: #e74c3c;
     color: white;
     border: none;
-    padding: 5px 8px;
-    font-size: 12px;
-    cursor: pointer;
+    padding: 5px 10px;
     border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
     opacity: 0;
-    transition: opacity 0.3s ease;
     position: absolute;
     right: 15px;
     top: 50%;
     transform: translateY(-50%);
+    transition: opacity 0.3s ease;
 }
 
-#transaction-list li:hover .delete-btn {
-    opacity: 1;
+#transaction-list li:hover .delete-btn { opacity: 1; }
+#transaction-list li:hover .transaction-amount { opacity: 0; }
+
+/* --- 8. LAPORAN BULANAN (FITUR BARU) --- */
+.report-section {
+    border-top: 2px dashed #ddd;
+    padding-top: 30px;
+    margin-top: 20px;
 }
 
-#transaction-list li:hover .transaction-amount {
-    display: none; /* Sembunyikan jumlah saat hover untuk menunjukkan tombol hapus */
+.report-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
 }
 
-/* Desain Responsif */
+/* Kartu Persona (Kiri) */
+.persona-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 5px 15px rgba(118, 75, 162, 0.3);
+}
+
+.persona-icon {
+    font-size: 40px;
+    background: rgba(255,255,255,0.2);
+    width: 70px;
+    height: 70px;
+    line-height: 70px;
+    border-radius: 50%;
+    margin-bottom: 15px;
+}
+
+.persona-card h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; margin-bottom: 5px; }
+.persona-card h4 { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+.persona-card p { font-size: 13px; line-height: 1.4; }
+
+/* Statistik Kategori (Kanan) */
+.category-stats {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #eee;
+}
+
+.category-stats h3 { font-size: 14px; margin-bottom: 15px; color: #555; }
+
+.cat-item { margin-bottom: 15px; }
+
+.cat-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin-bottom: 5px;
+    font-weight: 700;
+}
+
+.progress-bg {
+    background-color: #eee;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%; /* Akan diisi JS */
+    transition: width 1s ease-in-out;
+    background-color: #95a5a6; /* Default color */
+    border-radius: 4px;
+}
+
+/* Warna Bar Berdasarkan Kategori */
+.progress-fill.makanan { background-color: #e67e22; }
+.progress-fill.transportasi { background-color: #f1c40f; }
+.progress-fill.tagihan { background-color: #e74c3c; }
+.progress-fill.hiburan { background-color: #9b59b6; }
+.progress-fill.belanja { background-color: #1abc9c; }
+.progress-fill.lainnya { background-color: #34495e; }
+.progress-fill.gaji { background-color: #2ecc71; }
+
+/* --- 9. RESPONSIVE DESIGN (HP) --- */
 @media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
     .content-layout {
         flex-direction: column;
     }
 
     .summary-container {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr; /* Kartu ringkasan jadi vertikal */
     }
 
-    main {
-        padding: 20px;
-    }
-
-    header {
-        padding: 20px;
+    .report-container {
+        grid-template-columns: 1fr; /* Laporan jadi vertikal */
     }
 }
