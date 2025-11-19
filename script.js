@@ -28,17 +28,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let expenseChartInstance = null;
     let trendChartInstance = null;
 
+    // Daftar Kategori
     const categories = {
-        expense: ['Makanan', 'Transportasi', 'Tagihan', 'Hiburan', 'Belanja', 'Kesehatan', 'Pendidikan', 'Lainnya'],
+        expense: ['Makanan', 'Transportasi', 'Tagihan', 'Hiburan', 'Belanja', 'Kesehatan', 'Pendidikan', 'Sedekah', 'Lainnya'],
         income: ['Gaji', 'Bonus', 'Freelance', 'Investasi', 'Hadiah', 'Lainnya']
     };
 
-    // --- INITIALIZATION ---
+    // --- INIT ---
     function init() {
-        // Set tanggal hari ini di input form
         dateInput.valueAsDate = new Date();
-        
-        // Set filter bulan ke bulan ini
         const now = new Date();
         const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
         monthFilter.value = currentMonthStr;
@@ -65,14 +63,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- CORE LOGIC: FILTERING ---
-    // Fungsi ini mengambil transaksi hanya untuk bulan yang dipilih di filter
     function getFilteredTransactions() {
-        const selectedMonth = monthFilter.value; // format "YYYY-MM"
+        const selectedMonth = monthFilter.value;
         if (!selectedMonth) return transactions;
-
-        return transactions.filter(t => {
-            return t.date.startsWith(selectedMonth);
-        });
+        return transactions.filter(t => t.date.startsWith(selectedMonth));
     }
 
     // --- CRUD OPERATIONS ---
@@ -109,7 +103,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateLocalStorage();
         updateUI();
         
-        // Reset Form simple
         textInput.value = '';
         amountInput.value = '';
     }
@@ -138,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.style.background = '#e67e22';
         cancelBtn.style.display = 'block';
         
-        // Scroll ke form jika di hp
         if(window.innerWidth < 768) {
             document.querySelector('.form-section').scrollIntoView({behavior: 'smooth'});
         }
@@ -155,13 +147,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     cancelBtn.addEventListener('click', exitEditMode);
-    monthFilter.addEventListener('change', updateUI); // Update saat filter ganti
+    monthFilter.addEventListener('change', updateUI);
 
     // --- UI UPDATE MANAGER ---
     function updateUI() {
         const filteredData = getFilteredTransactions();
         
-        // 1. Hitung Total
         const amounts = filteredData.map(t => t.type === 'income' ? t.amount : -t.amount);
         const total = amounts.reduce((acc, item) => (acc += item), 0);
         const income = amounts.filter(item => item > 0).reduce((acc, item) => (acc += item), 0);
@@ -171,9 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
         incomeEl.innerText = formatRupiah(income);
         expenseEl.innerText = formatRupiah(expense);
 
-        // 2. Render List
         listEl.innerHTML = '';
-        // Sort berdasarkan tanggal terbaru
         const sortedData = [...filteredData].sort((a, b) => new Date(b.date) - new Date(a.date));
         
         if (sortedData.length === 0) {
@@ -202,42 +191,116 @@ document.addEventListener('DOMContentLoaded', () => {
             listEl.appendChild(item);
         });
 
-        // 3. Update AI Persona
-        updatePersona(income, expense);
+        // Panggil AI Cerdas Baru
+        generateAIInsight(income, expense, filteredData);
 
-        // 4. Render Charts
         renderCharts(filteredData);
     }
 
-    function updatePersona(inc, exp) {
-        const icon = document.getElementById('persona-icon');
-        const desc = document.getElementById('persona-desc');
+    // --- LOGIKA AI CERDAS (DIPERBARUI) ---
+    function generateAIInsight(inc, exp, transactions) {
+        const iconEl = document.getElementById('persona-icon');
+        const descEl = document.getElementById('persona-desc');
         
+        // 1. Hitung total per kategori pengeluaran
+        let categoryTotals = {};
+        transactions.forEach(t => {
+            if(t.type === 'expense') {
+                categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
+            }
+        });
+
+        // Array saran (Insight List)
+        let insights = [];
+
+        // A. Logika Kondisi Kritis
         if (inc === 0 && exp === 0) {
-            icon.innerText = '😴'; desc.innerText = 'Data kosong. Yuk mulai catat!';
-        } else if (exp > inc) {
-            icon.innerText = '🚨'; desc.innerText = 'Waspada! Pengeluaran lebih besar dari pemasukan.';
-        } else if ((inc - exp) / inc > 0.5) {
-            icon.innerText = '👑'; desc.innerText = 'Sultan! Kamu hemat lebih dari 50% pendapatan.';
-        } else {
-            icon.innerText = '✅'; desc.innerText = 'Keuangan stabil. Pertahankan!';
+            setAI('😴', 'Data masih kosong nih. Yuk catat transaksi pertamamu!'); return;
         }
+        if (exp > inc) {
+            setAI('🚨', 'Waspada! Pengeluaranmu lebih besar dari pemasukan (Besar Pasak daripada Tiang). Rem belanjaan!'); return;
+        }
+        if (inc > 0 && (inc - exp) / inc < 0.1) {
+            insights.push({ icon: '💸', text: 'Sisa saldomu tipis banget (di bawah 10%). Mode hemat aktif!' });
+        }
+
+        // B. Logika Kategori Spesifik (Cerdas)
+        
+        // MAKANAN (Jika > 40% pengeluaran)
+        if (categoryTotals['Makanan'] && (categoryTotals['Makanan'] / exp) > 0.4) {
+            const foodMsgs = [
+                "Waduh, 40% uangmu habis di perut! Coba masak sendiri yuk, lebih hemat.",
+                "Jajan boleh, tapi ingat tabungan. Kurangi pesan antar makanan ya!",
+                "Boros di makanan nih. Bawa bekal ke kantor/sekolah bisa jadi solusi."
+            ];
+            insights.push({ icon: '🍔', text: randomPick(foodMsgs) });
+        }
+
+        // HIBURAN & BELANJA (Jika > 30% pengeluaran)
+        if ((categoryTotals['Hiburan'] || 0) + (categoryTotals['Belanja'] || 0) > (exp * 0.3)) {
+            const shopMsgs = [
+                "Self-reward itu perlu, tapi jangan sampai boncos ya!",
+                "Coba terapkan aturan 'tunggu 24 jam' sebelum checkout barang keinginan.",
+                "Kurangi 'healing' yang menguras dompet. Cari hobi gratisan yuk!"
+            ];
+            insights.push({ icon: '🛍️', text: randomPick(shopMsgs) });
+        }
+
+        // TRANSPORTASI (Jika > 25% pengeluaran)
+        if (categoryTotals['Transportasi'] && (categoryTotals['Transportasi'] / exp) > 0.25) {
+             insights.push({ icon: '🚖', text: "Biaya transportasimu lumayan bengkak. Ada opsi nebeng atau kendaraan umum?" });
+        }
+
+        // PENDIDIKAN (Positive Reinforcement - Berapapun jumlahnya)
+        if (categoryTotals['Pendidikan'] && categoryTotals['Pendidikan'] > 0) {
+            insights.push({ icon: '🎓', text: "Investasi leher ke atas (Pendidikan) itu gapapa mahal. Semangat belajarnya!" });
+        }
+
+        // SEDEKAH (Positive Reinforcement)
+        if (categoryTotals['Sedekah'] && categoryTotals['Sedekah'] > 0) {
+            insights.push({ icon: '🤲', text: "Harta tidak akan berkurang karena sedekah. Keren!" });
+        }
+
+        // KESEHATAN
+        if (categoryTotals['Kesehatan'] && categoryTotals['Kesehatan'] > 0) {
+            insights.push({ icon: '💊', text: "Kesehatan itu mahal. Semoga lekas pulih / tetap sehat ya!" });
+        }
+
+        // C. Logika Hemat (Default jika tidak ada isu besar)
+        if (inc > 0 && (inc - exp) / inc > 0.5) {
+            insights.push({ icon: '👑', text: "Luar biasa! Kamu berhasil menabung lebih dari 50% pendapatanmu." });
+        } else {
+            insights.push({ icon: '✅', text: "Keuanganmu cukup stabil. Pertahankan dan jangan lupa menabung." });
+        }
+
+        // D. PEMILIHAN SARAN (Prioritas: Kategori > Umum)
+        // Kita ambil saran dari array insights. Jika ada saran kategori (makanan/pendidikan dll), itu akan muncul duluan karena urutan push di atas.
+        // Namun agar variatif, jika ada banyak insight, kita ambil yang paling relevan (index 0 atau 1).
+        
+        const selected = insights[0]; // Ambil prioritas teratas yang ditemukan
+        setAI(selected.icon, selected.text);
+    }
+
+    function setAI(icon, text) {
+        document.getElementById('persona-icon').innerText = icon;
+        document.getElementById('persona-desc').innerText = text;
+    }
+
+    function randomPick(array) {
+        return array[Math.floor(Math.random() * array.length)];
     }
 
     // --- CHART.JS IMPLEMENTATION ---
     function renderCharts(data) {
-        // A. DATA PREPARATION FOR EXPENSE PIE CHART
         const expenseData = data.filter(t => t.type === 'expense');
         const expenseCats = {};
         expenseData.forEach(t => {
             expenseCats[t.category] = (expenseCats[t.category] || 0) + t.amount;
         });
 
-        // B. DATA PREPARATION FOR TREND LINE CHART (Harian)
-        // Group by Date (1-31)
         const daysInMonth = {};
         data.forEach(t => {
-            const day = parseInt(t.date.split('-')[2]); // Ambil tanggalnya saja
+            const day = parseInt(t.date.split('-')[2]);
             if (!daysInMonth[day]) daysInMonth[day] = 0;
             if (t.type === 'income') daysInMonth[day] += t.amount;
             else daysInMonth[day] -= t.amount;
@@ -246,62 +309,45 @@ document.addEventListener('DOMContentLoaded', () => {
         const labels = Object.keys(daysInMonth).sort((a,b) => a-b);
         const trendData = labels.map(day => daysInMonth[day]);
 
-        // C. RENDER EXPENSE CHART (Doughnut)
-        if (expenseChartInstance) expenseChartInstance.destroy(); // Hapus chart lama agar tidak numpuk
-        
+        if (expenseChartInstance) expenseChartInstance.destroy();
         expenseChartInstance = new Chart(ctxExpense, {
             type: 'doughnut',
             data: {
                 labels: Object.keys(expenseCats),
                 datasets: [{
                     data: Object.values(expenseCats),
-                    backgroundColor: ['#ff7675', '#fab1a0', '#ffeaa7', '#55efc4', '#74b9ff', '#a29bfe', '#dfe6e9'],
+                    backgroundColor: ['#ff7675', '#fab1a0', '#ffeaa7', '#55efc4', '#74b9ff', '#a29bfe', '#dfe6e9', '#00b894', '#636e72'],
                     borderWidth: 0
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom', labels: { boxWidth: 10 } } }
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10 } } } }
         });
 
-        // D. RENDER TREND CHART (Line)
         if (trendChartInstance) trendChartInstance.destroy();
-
         trendChartInstance = new Chart(ctxTrend, {
             type: 'line',
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Arus Kas (Net)',
+                    label: 'Net Flow',
                     data: trendData,
                     borderColor: '#6c5ce7',
                     backgroundColor: 'rgba(108, 92, 231, 0.1)',
                     fill: true,
-                    tension: 0.4 // Membuat garis melengkung halus
+                    tension: 0.4
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true } }
-            }
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
         });
     }
 
     // --- EXPORT TO CSV ---
     exportBtn.addEventListener('click', () => {
-        if(transactions.length === 0) { alert('Tidak ada data untuk diunduh.'); return; }
-        
-        let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += "ID,Tanggal,Deskripsi,Kategori,Tipe,Jumlah\n"; // Header
-
+        if(transactions.length === 0) { alert('Tidak ada data.'); return; }
+        let csvContent = "data:text/csv;charset=utf-8,ID,Tanggal,Deskripsi,Kategori,Tipe,Jumlah\n";
         transactions.forEach(t => {
-            const row = `${t.id},${t.date},"${t.text}",${t.category},${t.type},${t.amount}`;
-            csvContent += row + "\n";
+            csvContent += `${t.id},${t.date},"${t.text}",${t.category},${t.type},${t.amount}\n`;
         });
-
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
@@ -311,16 +357,14 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.removeChild(link);
     });
 
-    // --- RESET ---
     resetBtn.addEventListener('click', () => {
-        if(confirm('PERINGATAN: Semua data akan dihapus permanen!')) {
+        if(confirm('Hapus SEMUA data permanen?')) {
             transactions = [];
             updateLocalStorage();
-            updateUI();
+            init();
         }
     });
 
-    // --- UTILS ---
     function updateLocalStorage() { localStorage.setItem('transactions', JSON.stringify(transactions)); }
     function formatRupiah(num) { return 'Rp ' + num.toFixed(0).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.'); }
 
