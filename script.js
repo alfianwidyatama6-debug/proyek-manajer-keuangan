@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const expenseEl = document.getElementById('total-expense');
     const listEl = document.getElementById('transaction-list');
     const form = document.getElementById('transaction-form');
+    
+    // Inputs
     const textInput = document.getElementById('text');
     const amountInput = document.getElementById('amount');
     const dateInput = document.getElementById('date');
@@ -19,9 +21,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const exportBtn = document.getElementById('export-btn');
     const resetBtn = document.getElementById('reset-btn');
 
-    // Chart Contexts
-    const ctxExpense = document.getElementById('expenseChart').getContext('2d');
-    const ctxTrend = document.getElementById('trendChart').getContext('2d');
+    // Chart Contexts (Safe check)
+    const expenseChartEl = document.getElementById('expenseChart');
+    const trendChartEl = document.getElementById('trendChart');
+    const ctxExpense = expenseChartEl ? expenseChartEl.getContext('2d') : null;
+    const ctxTrend = trendChartEl ? trendChartEl.getContext('2d') : null;
 
     // --- STATE & VARIABLES ---
     let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
@@ -36,9 +40,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- INIT ---
     function init() {
-        dateInput.valueAsDate = new Date();
+        // Set tanggal hari ini (Format YYYY-MM-DD yang aman untuk input date)
         const now = new Date();
-        const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const localDate = now.toLocaleDateString('en-CA'); // Format: YYYY-MM-DD
+        dateInput.value = localDate;
+        
+        // Set filter bulan saat ini
+        const currentMonthStr = localDate.slice(0, 7); // Ambil YYYY-MM
         monthFilter.value = currentMonthStr;
 
         updateCategories();
@@ -46,8 +54,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- HELPER FUNCTIONS ---
-    window.updateCategories = function() {
+    
+    // [FIX] Fungsi update kategori dipisah agar bisa dipanggil event listener
+    function updateCategories() {
         const type = typeInput.value;
+        // Simpan kategori yang sedang dipilih saat ini (jika ada/sedang edit)
+        const currentVal = categoryInput.value; 
+        
         categoryInput.innerHTML = '';
         categories[type].forEach(cat => {
             const option = document.createElement('option');
@@ -55,10 +68,21 @@ document.addEventListener('DOMContentLoaded', () => {
             option.innerText = cat;
             categoryInput.appendChild(option);
         });
+
+        // Jika kategori sebelumnya ada di daftar baru, pilih kembali (UX improvement)
+        if (currentVal && categories[type].includes(currentVal)) {
+            categoryInput.value = currentVal;
+        }
     }
 
+    // [FIX] Event Listener untuk Type Select (Penting!)
+    typeInput.addEventListener('change', updateCategories);
+
+    // Input Formatter (Hanya angka dan titik)
     amountInput.addEventListener('input', function(e) {
         let value = e.target.value.replace(/[^0-9]/g, '');
+        // Mencegah 0 di depan kecuali angka itu sendiri 0 (opsional, tapi lebih rapi)
+        if (value.length > 1 && value.startsWith('0')) value = value.substring(1);
         e.target.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     });
 
@@ -73,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveTransaction(e) {
         e.preventDefault();
         const text = textInput.value.trim();
-        const rawAmount = amountInput.value.replace(/\./g, '');
+        const rawAmount = amountInput.value.replace(/\./g, ''); // Hapus titik separator
         const date = dateInput.value;
 
         if (text === '' || rawAmount === '' || date === '') {
@@ -81,18 +105,27 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const amount = parseInt(rawAmount);
+        const amount = parseInt(rawAmount, 10);
+        
+        // Validasi jumlah tidak boleh 0
+        if (amount <= 0) {
+            alert('Jumlah uang harus lebih besar dari 0');
+            return;
+        }
+
         const type = typeInput.value;
         const category = categoryInput.value;
         const editId = editIdInput.value;
 
         if (editId) {
+            // Mode Edit
             const index = transactions.findIndex(t => t.id == editId);
             if (index !== -1) {
                 transactions[index] = { id: parseInt(editId), text, amount, type, category, date };
             }
             exitEditMode();
         } else {
+            // Mode Tambah Baru
             const transaction = {
                 id: Date.now(),
                 text, amount, type, category, date
@@ -103,10 +136,13 @@ document.addEventListener('DOMContentLoaded', () => {
         updateLocalStorage();
         updateUI();
         
+        // Reset form sederhana
         textInput.value = '';
         amountInput.value = '';
+        textInput.focus();
     }
 
+    // Global function attached to window for HTML onclick events
     window.removeTransaction = function(id) {
         if(confirm('Hapus transaksi ini?')) {
             transactions = transactions.filter(t => t.id !== id);
@@ -119,31 +155,46 @@ document.addEventListener('DOMContentLoaded', () => {
         const t = transactions.find(t => t.id === id);
         if (!t) return;
 
+        // Isi form dengan data lama
         textInput.value = t.text;
         amountInput.value = t.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         typeInput.value = t.type;
         dateInput.value = t.date;
+        
+        // Update opsi kategori sesuai tipe dulu
         updateCategories();
+        // Baru set nilainya
         categoryInput.value = t.category;
         editIdInput.value = t.id;
 
-        submitBtn.innerText = 'Update';
-        submitBtn.style.background = '#e67e22';
-        cancelBtn.style.display = 'block';
+        // Ubah tampilan tombol
+        submitBtn.innerText = 'Update Transaksi';
+        submitBtn.style.background = '#e67e22'; // Warna Orange untuk edit
+        cancelBtn.style.display = 'inline-block';
         
+        // Scroll ke form di HP
         if(window.innerWidth < 768) {
-            document.querySelector('.form-section').scrollIntoView({behavior: 'smooth'});
+            form.scrollIntoView({behavior: 'smooth'});
         }
     }
 
     function exitEditMode() {
         editIdInput.value = '';
-        submitBtn.innerText = 'Simpan';
+        submitBtn.innerText = 'Tambah Transaksi';
         submitBtn.style.background = '';
         cancelBtn.style.display = 'none';
+        
+        // Bersihkan input
         textInput.value = '';
         amountInput.value = '';
-        dateInput.valueAsDate = new Date();
+        
+        // Kembalikan tanggal ke hari ini
+        const now = new Date();
+        dateInput.value = now.toLocaleDateString('en-CA');
+        
+        // Kembalikan ke kategori default (expense)
+        typeInput.value = 'expense';
+        updateCategories();
     }
 
     cancelBtn.addEventListener('click', exitEditMode);
@@ -155,14 +206,15 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const amounts = filteredData.map(t => t.type === 'income' ? t.amount : -t.amount);
         const total = amounts.reduce((acc, item) => (acc += item), 0);
-        const income = amounts.filter(item => item > 0).reduce((acc, item) => (acc += item), 0);
-        const expense = amounts.filter(item => item < 0).reduce((acc, item) => (acc += item), 0) * -1;
+        const income = filteredData.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
+        const expense = filteredData.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
 
         balanceEl.innerText = formatRupiah(total);
         incomeEl.innerText = formatRupiah(income);
         expenseEl.innerText = formatRupiah(expense);
 
         listEl.innerHTML = '';
+        // Sort data berdasarkan tanggal (terbaru di atas)
         const sortedData = [...filteredData].sort((a, b) => new Date(b.date) - new Date(a.date));
         
         if (sortedData.length === 0) {
@@ -171,37 +223,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
         sortedData.forEach(t => {
             const item = document.createElement('li');
-            item.classList.add(t.type);
+            item.classList.add(t.type); // class 'income' atau 'expense' untuk CSS styling
             const sign = t.type === 'income' ? '+' : '-';
-            const dateFormatted = new Date(t.date).toLocaleDateString('id-ID', {day:'numeric', month:'short'});
+            
+            // Format tanggal lebih cantik
+            const dateObj = new Date(t.date);
+            const dateFormatted = dateObj.toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'});
             
             item.innerHTML = `
-                <div>
-                    <h4>${t.text} <span class="history-date">${dateFormatted}</span></h4>
-                    <small>${t.category}</small>
+                <div class="tx-info">
+                    <h4>${t.text}</h4>
+                    <small><i class="fa-regular fa-calendar"></i> ${dateFormatted} &bull; ${t.category}</small>
                 </div>
-                <div style="text-align:right;">
+                <div class="tx-amount">
                     <span style="font-weight:bold; display:block;">${sign} ${formatRupiah(t.amount)}</span>
-                    <div style="margin-top:5px;">
+                    <div class="action-group">
                         <button class="action-btn edit-btn" onclick="editTransaction(${t.id})"><i class="fa-solid fa-pen"></i></button>
-                        <button class="action-btn delete-btn" style="color:#ff7675; margin-left:5px;" onclick="removeTransaction(${t.id})"><i class="fa-solid fa-trash"></i></button>
+                        <button class="action-btn delete-btn" onclick="removeTransaction(${t.id})"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </div>
             `;
             listEl.appendChild(item);
         });
 
-        // Panggil AI Cerdas Baru
         generateAIInsight(income, expense, filteredData);
-
         renderCharts(filteredData);
     }
 
-    // --- LOGIKA AI CERDAS (DIPERBARUI) ---
+    // --- LOGIKA AI CERDAS ---
     function generateAIInsight(inc, exp, transactions) {
-        const iconEl = document.getElementById('persona-icon');
-        const descEl = document.getElementById('persona-desc');
-        
         // 1. Hitung total per kategori pengeluaran
         let categoryTotals = {};
         transactions.forEach(t => {
@@ -210,98 +260,76 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Array saran (Insight List)
         let insights = [];
 
         // A. Logika Kondisi Kritis
         if (inc === 0 && exp === 0) {
             setAI('😴', 'Data masih kosong nih. Yuk catat transaksi pertamamu!'); return;
         }
-        if (exp > inc) {
-            setAI('🚨', 'Waspada! Pengeluaranmu lebih besar dari pemasukan (Besar Pasak daripada Tiang). Rem belanjaan!'); return;
+        if (exp > inc && inc > 0) {
+            setAI('🚨', 'Waspada! Besar Pasak daripada Tiang. Stop belanja yang tidak perlu!'); return;
         }
-        if (inc > 0 && (inc - exp) / inc < 0.1) {
-            insights.push({ icon: '💸', text: 'Sisa saldomu tipis banget (di bawah 10%). Mode hemat aktif!' });
-        }
-
-        // B. Logika Kategori Spesifik (Cerdas)
         
-        // MAKANAN (Jika > 40% pengeluaran)
-        if (categoryTotals['Makanan'] && (categoryTotals['Makanan'] / exp) > 0.4) {
-            const foodMsgs = [
-                "Waduh, 40% uangmu habis di perut! Coba masak sendiri yuk, lebih hemat.",
-                "Jajan boleh, tapi ingat tabungan. Kurangi pesan antar makanan ya!",
-                "Boros di makanan nih. Bawa bekal ke kantor/sekolah bisa jadi solusi."
-            ];
-            insights.push({ icon: '🍔', text: randomPick(foodMsgs) });
+        // B. Logika Kategori (Deteksi Pemborosan)
+        const ratio = exp > 0 ? exp : 1; // prevent division by zero
+
+        if (categoryTotals['Makanan'] && (categoryTotals['Makanan'] / ratio) > 0.4) {
+            insights.push({ icon: '🍔', text: "40% uangmu habis buat makan. Coba masak sendiri biar lebih hemat!" });
+        }
+        if ((categoryTotals['Hiburan'] || 0) + (categoryTotals['Belanja'] || 0) > (ratio * 0.3)) {
+            insights.push({ icon: '🛍️', text: "Budget 'Happy-Happy' sudah over 30%. Tahan diri dulu ya." });
+        }
+        if (categoryTotals['Transportasi'] && (categoryTotals['Transportasi'] / ratio) > 0.25) {
+             insights.push({ icon: '🚖', text: "Biaya transportasimu tinggi. Ada rute alternatif yang lebih murah?" });
         }
 
-        // HIBURAN & BELANJA (Jika > 30% pengeluaran)
-        if ((categoryTotals['Hiburan'] || 0) + (categoryTotals['Belanja'] || 0) > (exp * 0.3)) {
-            const shopMsgs = [
-                "Self-reward itu perlu, tapi jangan sampai boncos ya!",
-                "Coba terapkan aturan 'tunggu 24 jam' sebelum checkout barang keinginan.",
-                "Kurangi 'healing' yang menguras dompet. Cari hobi gratisan yuk!"
-            ];
-            insights.push({ icon: '🛍️', text: randomPick(shopMsgs) });
+        // C. Positive Reinforcement
+        if (categoryTotals['Investasi'] && categoryTotals['Investasi'] > 0) {
+             insights.push({ icon: '📈', text: "Keren! Kamu menyisihkan uang untuk investasi masa depan." });
         }
-
-        // TRANSPORTASI (Jika > 25% pengeluaran)
-        if (categoryTotals['Transportasi'] && (categoryTotals['Transportasi'] / exp) > 0.25) {
-             insights.push({ icon: '🚖', text: "Biaya transportasimu lumayan bengkak. Ada opsi nebeng atau kendaraan umum?" });
-        }
-
-        // PENDIDIKAN (Positive Reinforcement - Berapapun jumlahnya)
-        if (categoryTotals['Pendidikan'] && categoryTotals['Pendidikan'] > 0) {
-            insights.push({ icon: '🎓', text: "Investasi leher ke atas (Pendidikan) itu gapapa mahal. Semangat belajarnya!" });
-        }
-
-        // SEDEKAH (Positive Reinforcement)
         if (categoryTotals['Sedekah'] && categoryTotals['Sedekah'] > 0) {
-            insights.push({ icon: '🤲', text: "Harta tidak akan berkurang karena sedekah. Keren!" });
+             insights.push({ icon: '🤲', text: "Semoga rezekimu makin lancar karena rajin bersedekah." });
         }
 
-        // KESEHATAN
-        if (categoryTotals['Kesehatan'] && categoryTotals['Kesehatan'] > 0) {
-            insights.push({ icon: '💊', text: "Kesehatan itu mahal. Semoga lekas pulih / tetap sehat ya!" });
-        }
-
-        // C. Logika Hemat (Default jika tidak ada isu besar)
+        // D. General Status
         if (inc > 0 && (inc - exp) / inc > 0.5) {
-            insights.push({ icon: '👑', text: "Luar biasa! Kamu berhasil menabung lebih dari 50% pendapatanmu." });
-        } else {
-            insights.push({ icon: '✅', text: "Keuanganmu cukup stabil. Pertahankan dan jangan lupa menabung." });
+            insights.push({ icon: '👑', text: "Sultan Mode: Kamu berhasil menabung >50% pendapatanmu!" });
+        } else if (inc > exp) {
+            insights.push({ icon: '✅', text: "Keuanganmu sehat. Pertahankan cashflow positif ini." });
         }
 
-        // D. PEMILIHAN SARAN (Prioritas: Kategori > Umum)
-        // Kita ambil saran dari array insights. Jika ada saran kategori (makanan/pendidikan dll), itu akan muncul duluan karena urutan push di atas.
-        // Namun agar variatif, jika ada banyak insight, kita ambil yang paling relevan (index 0 atau 1).
+        // Pilih saran secara acak jika ada banyak, atau ambil yang pertama
+        const selected = insights.length > 0 ? insights[Math.floor(Math.random() * insights.length)] : { icon: '🤔', text: 'Terus catat pengeluaranmu agar aku bisa memberi saran.' };
         
-        const selected = insights[0]; // Ambil prioritas teratas yang ditemukan
         setAI(selected.icon, selected.text);
     }
 
     function setAI(icon, text) {
-        document.getElementById('persona-icon').innerText = icon;
-        document.getElementById('persona-desc').innerText = text;
-    }
-
-    function randomPick(array) {
-        return array[Math.floor(Math.random() * array.length)];
+        const iconEl = document.getElementById('persona-icon');
+        const descEl = document.getElementById('persona-desc');
+        if(iconEl) iconEl.innerText = icon;
+        if(descEl) descEl.innerText = text;
     }
 
     // --- CHART.JS IMPLEMENTATION ---
     function renderCharts(data) {
+        // Cek apakah canvas tersedia
+        if (!ctxExpense || !ctxTrend) return;
+
         const expenseData = data.filter(t => t.type === 'expense');
         const expenseCats = {};
         expenseData.forEach(t => {
             expenseCats[t.category] = (expenseCats[t.category] || 0) + t.amount;
         });
 
+        // Chart Trend Harian
         const daysInMonth = {};
         data.forEach(t => {
+            // Ambil tanggal (1-31)
             const day = parseInt(t.date.split('-')[2]);
             if (!daysInMonth[day]) daysInMonth[day] = 0;
+            
+            // Net Flow harian (Masuk - Keluar)
             if (t.type === 'income') daysInMonth[day] += t.amount;
             else daysInMonth[day] -= t.amount;
         });
@@ -309,6 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const labels = Object.keys(daysInMonth).sort((a,b) => a-b);
         const trendData = labels.map(day => daysInMonth[day]);
 
+        // Destroy old charts if exist
         if (expenseChartInstance) expenseChartInstance.destroy();
         expenseChartInstance = new Chart(ctxExpense, {
             type: 'doughnut',
@@ -317,10 +346,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 datasets: [{
                     data: Object.values(expenseCats),
                     backgroundColor: ['#ff7675', '#fab1a0', '#ffeaa7', '#55efc4', '#74b9ff', '#a29bfe', '#dfe6e9', '#00b894', '#636e72'],
-                    borderWidth: 0
+                    borderWidth: 1
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10 } } } }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { 
+                    legend: { position: 'bottom', labels: { boxWidth: 10, font: {size: 11} } } 
+                } 
+            }
         });
 
         if (trendChartInstance) trendChartInstance.destroy();
@@ -329,15 +364,20 @@ document.addEventListener('DOMContentLoaded', () => {
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Net Flow',
+                    label: 'Net Flow Harian',
                     data: trendData,
                     borderColor: '#6c5ce7',
                     backgroundColor: 'rgba(108, 92, 231, 0.1)',
                     fill: true,
-                    tension: 0.4
+                    tension: 0.4,
+                    pointRadius: 3
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                scales: { y: { beginAtZero: false } } 
+            }
         });
     }
 
@@ -351,14 +391,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "laporan_keuangan.csv");
+        link.setAttribute("download", `Laporan_Keuangan_${new Date().toISOString().slice(0,10)}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     });
 
     resetBtn.addEventListener('click', () => {
-        if(confirm('Hapus SEMUA data permanen?')) {
+        if(confirm('Hapus SEMUA data secara permanen? Tindakan ini tidak bisa dibatalkan.')) {
             transactions = [];
             updateLocalStorage();
             init();
@@ -366,8 +406,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function updateLocalStorage() { localStorage.setItem('transactions', JSON.stringify(transactions)); }
-    function formatRupiah(num) { return 'Rp ' + num.toFixed(0).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.'); }
+    function formatRupiah(num) { 
+        return 'Rp ' + num.toFixed(0).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.'); 
+    }
 
     form.addEventListener('submit', saveTransaction);
+    
+    // Jalankan aplikasi
     init();
 });
