@@ -279,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // PENDIDIKAN (Positive Reinforcement - Berapapun jumlahnya)
         if (categoryTotals['Pendidikan'] && categoryTotals['Pendidikan'] > 0) {
-            insights.push({ icon: '🎓', text: "Investasi leher ke atas (Pendidikan) itu gapapa mahal. Semangat belajarnya!" });
+            insights.push({ icon: '🎓', text: "Investasi masa depan (Pendidikan) itu penting banget. Semangat belajarnya!" });
         }
 
         // SEDEKAH (Positive Reinforcement)
